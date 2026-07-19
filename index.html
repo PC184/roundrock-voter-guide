@@ -1,1 +1,887 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Round Rock Civic Issue Finder | Williamson County, TX</title>
+<meta name="description" content="Find out which elected offices in Round Rock and Williamson County control the issues that matter most to you — and how to vote.">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+  :root {
+    --bg: #f5f5f3;
+    --surface: #ffffff;
+    --surface-alt: #f0efec;
+    --border: #e0deda;
+    --border-strong: #c8c5bf;
+    --text-primary: #1a1a18;
+    --text-secondary: #5a5955;
+    --text-muted: #8a8783;
+    --accent: #1a56db;
+    --accent-bg: #eff4ff;
+    --accent-border: #b4c9f7;
+    --accent-text: #1e40af;
+    --warning-bg: #fffbeb;
+    --warning-border: #fcd34d;
+    --warning-text: #92400e;
+    --hot-bg: #fef2f2;
+    --hot-border: #fca5a5;
+    --hot-text: #991b1b;
+    --radius: 8px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text-primary);
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  /* ── Header ── */
+  .site-header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 1rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .site-header .logo {
+    width: 36px; height: 36px;
+    background: var(--accent);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .site-header .logo svg { width: 20px; height: 20px; fill: #fff; }
+  .site-header h1 { font-size: 16px; font-weight: 600; color: var(--text-primary); }
+  .site-header p  { font-size: 12px; color: var(--text-secondary); }
+
+  /* ── Layout ── */
+  .container { max-width: 680px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
+
+  /* ── Progress ── */
+  .progress-bar {
+    display: flex; gap: 6px; margin-bottom: 1.5rem; align-items: center;
+  }
+  .progress-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--border-strong); transition: background .2s;
+  }
+  .progress-dot.done { background: var(--accent); }
+  .progress-label {
+    font-size: 11px; color: var(--text-muted);
+    margin-left: 4px; font-weight: 500;
+    text-transform: uppercase; letter-spacing: .05em;
+  }
+
+  /* ── Location badge ── */
+  .location-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--accent-bg); border: 1px solid var(--accent-border);
+    border-radius: 20px; padding: 4px 12px;
+    font-size: 12px; font-weight: 500; color: var(--accent-text);
+    margin-bottom: 1rem;
+  }
+  .location-badge svg { width: 13px; height: 13px; fill: var(--accent-text); flex-shrink: 0; }
+
+  /* ── Step headings ── */
+  .step-title { font-size: 22px; font-weight: 600; margin-bottom: .25rem; color: var(--text-primary); }
+  .step-sub   { font-size: 14px; color: var(--text-secondary); margin-bottom: 1.25rem; line-height: 1.55; }
+
+  /* ── Steps visibility ── */
+  .step { display: none; }
+  .step.active { display: block; }
+
+  /* ── Issue chips ── */
+  .chip-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 1.5rem; }
+  .chip {
+    border: 1px solid var(--border-strong); border-radius: 20px;
+    padding: 7px 14px; font-size: 13px; cursor: pointer;
+    background: var(--surface); color: var(--text-secondary);
+    transition: all .15s; user-select: none;
+  }
+  .chip:hover { background: var(--surface-alt); color: var(--text-primary); border-color: var(--text-muted); }
+  .chip.sel {
+    background: var(--accent-bg); border-color: var(--accent-border);
+    color: var(--accent-text); font-weight: 500;
+  }
+
+  /* ── Buttons ── */
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    border: 1px solid var(--border-strong); border-radius: var(--radius);
+    padding: 9px 18px; font-size: 14px; font-weight: 500;
+    cursor: pointer; background: var(--surface); color: var(--text-primary);
+    transition: all .15s; text-decoration: none;
+  }
+  .btn:hover { background: var(--surface-alt); }
+  .btn:disabled { opacity: .4; cursor: default; pointer-events: none; }
+  .btn.primary {
+    background: var(--accent); border-color: var(--accent); color: #fff;
+  }
+  .btn.primary:hover { background: #1648c2; }
+  .btn-row { display: flex; gap: 8px; margin-top: 1.25rem; flex-wrap: wrap; }
+
+  /* ── Office cards ── */
+  .office-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 1.25rem; margin-bottom: .875rem;
+    box-shadow: var(--shadow);
+  }
+  .badge-row { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: .6rem; }
+  .badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 11px; font-weight: 500; border-radius: 20px; padding: 2px 9px;
+  }
+  .badge-level { background: var(--accent-bg); color: var(--accent-text); border: 1px solid var(--accent-border); }
+  .badge-hot   { background: var(--hot-bg);   color: var(--hot-text);   border: 1px solid var(--hot-border); }
+  .office-name { font-size: 15px; font-weight: 600; margin-bottom: .5rem; }
+  .issue-tags  { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: .75rem; }
+  .itag {
+    font-size: 11px; padding: 2px 8px; border-radius: 20px;
+    background: var(--surface-alt); border: 1px solid var(--border);
+    color: var(--text-secondary);
+  }
+  .office-why { font-size: 13px; color: var(--text-secondary); line-height: 1.6; margin-bottom: .875rem; }
+  .link-row   { display: flex; flex-wrap: wrap; gap: 7px; }
+  .link-btn {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 12px; padding: 5px 11px;
+    border: 1px solid var(--border-strong); border-radius: var(--radius);
+    color: var(--accent-text); background: var(--surface);
+    text-decoration: none; transition: background .12s;
+  }
+  .link-btn:hover { background: var(--accent-bg); }
+  .link-btn svg { width: 11px; height: 11px; fill: var(--accent-text); flex-shrink: 0; }
+
+  /* ── Related cards ── */
+  .related-card {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--surface-alt); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: .75rem 1rem;
+    margin-bottom: .5rem; cursor: pointer; text-decoration: none;
+    color: inherit; transition: border-color .15s, background .15s;
+  }
+  .related-card:hover { border-color: var(--border-strong); background: var(--surface); }
+  .related-icon { font-size: 22px; flex-shrink: 0; }
+  .related-text { flex: 1; }
+  .related-text strong { font-size: 13px; font-weight: 600; display: block; margin-bottom: 2px; }
+  .related-text span   { font-size: 12px; color: var(--text-secondary); }
+  .related-arrow { color: var(--text-muted); font-size: 18px; }
+
+  /* ── Section label ── */
+  .section-label {
+    font-size: 11px; font-weight: 600; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: .07em;
+    margin: 1.5rem 0 .6rem;
+  }
+  .divider { border: none; border-top: 1px solid var(--border); margin: 1.5rem 0; }
+
+  /* ── Warning box ── */
+  .warn-box {
+    background: var(--warning-bg); border: 1px solid var(--warning-border);
+    border-radius: var(--radius); padding: .875rem 1rem;
+    font-size: 13px; color: var(--warning-text);
+    line-height: 1.55; margin-bottom: 1rem;
+  }
+
+  /* ── Date grid ── */
+  .date-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));
+    gap: 8px; margin-bottom: 1.25rem;
+  }
+  .date-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: .75rem 1rem;
+  }
+  .date-label { font-size: 10px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 3px; }
+  .date-val   { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+  .date-sub   { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+
+  /* ── Location cards ── */
+  .loc-card {
+    background: var(--surface-alt); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: .6rem 1rem;
+    margin-bottom: 6px; font-size: 13px; color: var(--text-secondary);
+  }
+  .loc-card strong { color: var(--text-primary); display: block; font-weight: 600; font-size: 13px; }
+  .loc-note {
+    font-size: 12px; color: var(--text-muted); font-style: italic;
+    border-style: dashed;
+  }
+
+  /* ── Info cards ── */
+  .info-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 1rem 1.25rem;
+    margin-bottom: .75rem; box-shadow: var(--shadow);
+  }
+  .info-card h4 {
+    font-size: 14px; font-weight: 600; color: var(--text-primary);
+    margin-bottom: 5px; display: flex; align-items: center; gap: 7px;
+  }
+  .info-card h4 .ic { font-size: 16px; }
+  .info-card p { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+  .info-card p a { color: var(--accent-text); }
+
+  /* ── Useful links row ── */
+  .useful-links { display: flex; flex-wrap: wrap; gap: 7px; margin-top: .5rem; }
+
+  /* ── Footer ── */
+  .site-footer {
+    text-align: center; padding: 2rem 1rem;
+    font-size: 12px; color: var(--text-muted);
+    border-top: 1px solid var(--border); margin-top: 2rem;
+  }
+  .site-footer a { color: var(--accent-text); }
+
+  /* ── Mobile tweaks ── */
+  @media (max-width: 480px) {
+    .step-title { font-size: 19px; }
+    .date-grid  { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="site-header">
+  <div class="logo" aria-hidden="true">
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+    </svg>
+  </div>
+  <div>
+    <h1>Round Rock Civic Issue Finder</h1>
+    <p>Williamson County, Texas &mdash; Know your ballot, know your power</p>
+  </div>
+</header>
+
+<main class="container">
+
+  <!-- ═══════════════════════════════════
+       STEP 1 — Pick your issues
+  ═══════════════════════════════════ -->
+  <section id="s1" class="step active" aria-label="Step 1: Choose your issues">
+    <div class="progress-bar">
+      <div class="progress-dot done"></div>
+      <div class="progress-dot"></div>
+      <div class="progress-dot"></div>
+      <div class="progress-dot"></div>
+      <span class="progress-label">Step 1 of 4</span>
+    </div>
+
+    <div class="location-badge">
+      <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+      Round Rock &amp; Williamson County, Texas
+    </div>
+
+    <h2 class="step-title">What issues matter most to you?</h2>
+    <p class="step-sub">Pick everything that affects your daily life in Round Rock. We'll show you exactly which local elected offices make decisions about it.</p>
+
+    <div class="chip-grid" id="chip-grid" role="group" aria-label="Select issues that matter to you"></div>
+
+    <div class="btn-row">
+      <button class="btn primary" id="btn-next1" disabled onclick="goStep(2)">
+        See my results &#8594;
+      </button>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════
+       STEP 2 — Results
+  ═══════════════════════════════════ -->
+  <section id="s2" class="step" aria-label="Step 2: Offices that control your issues">
+    <div class="progress-bar">
+      <div class="progress-dot done"></div>
+      <div class="progress-dot done"></div>
+      <div class="progress-dot"></div>
+      <div class="progress-dot"></div>
+      <span class="progress-label">Step 2 of 4</span>
+    </div>
+
+    <div class="location-badge">
+      <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+      Round Rock &amp; Williamson County, Texas
+    </div>
+
+    <h2 class="step-title">Offices that control your issues</h2>
+    <p class="step-sub">These are the elected positions in Round Rock and Williamson County that make decisions about what you care about most. Cards marked <strong style="color:var(--hot-text)">On 2026 ballot</strong> have upcoming elections.</p>
+
+    <div id="offices-out"></div>
+
+    <hr class="divider">
+    <div class="section-label">Other local elections worth knowing about</div>
+    <div id="related-out"></div>
+
+    <div class="btn-row">
+      <button class="btn" onclick="goStep(1)">&#8592; Back</button>
+      <button class="btn primary" onclick="goStep(3)">How to vote &#8594;</button>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════
+       STEP 3 — How to vote
+  ═══════════════════════════════════ -->
+  <section id="s3" class="step" aria-label="Step 3: How to vote in Round Rock">
+    <div class="progress-bar">
+      <div class="progress-dot done"></div>
+      <div class="progress-dot done"></div>
+      <div class="progress-dot done"></div>
+      <div class="progress-dot"></div>
+      <span class="progress-label">Step 3 of 4</span>
+    </div>
+
+    <div class="location-badge">
+      <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+      Round Rock &amp; Williamson County, Texas
+    </div>
+
+    <h2 class="step-title">How to vote in Round Rock</h2>
+    <p class="step-sub">Everything you need to cast your ballot in Williamson County — registration, key dates, polling locations, and what to bring.</p>
+
+    <div class="warn-box">
+      &#9432; Most Round Rock voters are in <strong>Williamson County</strong>. A small portion near the southern edge falls in <strong>Travis County</strong>. Check your registration to confirm your county and correct polling location.
+    </div>
+
+    <div class="section-label">Upcoming key dates &mdash; next countywide election: May 26, 2026</div>
+    <div class="date-grid">
+      <div class="date-card">
+        <div class="date-label">Register by</div>
+        <div class="date-val">April 27, 2026</div>
+        <div class="date-sub">30 days before election day</div>
+      </div>
+      <div class="date-card">
+        <div class="date-label">Early voting</div>
+        <div class="date-val">May 18&ndash;22, 2026</div>
+        <div class="date-sub">Mon&ndash;Fri, 7 a.m.&ndash;7 p.m.</div>
+      </div>
+      <div class="date-card">
+        <div class="date-label">Mail ballot deadline</div>
+        <div class="date-val">May 15, 2026</div>
+        <div class="date-sub">Must be received, not postmarked</div>
+      </div>
+      <div class="date-card">
+        <div class="date-label">Election day</div>
+        <div class="date-val">May 26, 2026</div>
+        <div class="date-sub">7 a.m.&ndash;7 p.m.</div>
+      </div>
+    </div>
+
+    <div class="section-label">Early voting locations in Round Rock (Williamson County)</div>
+    <div class="loc-card"><strong>Allen R. Baca Center</strong>301 W. Bagdad Ave &mdash; Meeting Room 3</div>
+    <div class="loc-card"><strong>Wilco Jester Annex</strong>1801 E. Old Settlers Blvd &mdash; Anderson &amp; Harrell Rooms</div>
+    <div class="loc-card"><strong>Sleep Inn and Suites</strong>1980 S. IH 35 &mdash; Meeting Room</div>
+    <div class="loc-card loc-note">During early voting you may vote at <em>any</em> Williamson County location &mdash; not just these. Visit wilcotx.gov/elections for the full list and current wait times.</div>
+
+    <div class="section-label">What to know before you go</div>
+
+    <div class="info-card">
+      <h4><span class="ic">🪪</span> Bring valid photo ID</h4>
+      <p>Texas requires a government-issued photo ID: TX driver's license, TX ID card, U.S. passport, military ID, or TX handgun license. IDs expired up to 4 years are accepted. Questions? Call 1-800-252-VOTE.</p>
+    </div>
+    <div class="info-card">
+      <h4><span class="ic">📝</span> You can bring a written cheat sheet</h4>
+      <p>Texas allows voters to bring written or printed notes into the voting booth. Print your sample ballot from <a href="https://www.ballotready.org/us/tx-round-rock" target="_blank" rel="noopener">BallotReady</a> or <a href="https://ballotpedia.org/Round_Rock,_Texas" target="_blank" rel="noopener">Ballotpedia</a> before you go. Cell phones are <strong>not</strong> permitted within 100 feet of voting stations.</p>
+    </div>
+    <div class="info-card">
+      <h4><span class="ic">♿</span> Need curbside voting?</h4>
+      <p>All Williamson County polling locations offer curbside voting for those who cannot enter the building. Look for posted signs at the entrance with a text number &mdash; poll workers will come to your car.</p>
+    </div>
+    <div class="info-card">
+      <h4><span class="ic">🌐</span> Need language assistance?</h4>
+      <p>Help is available by phone: English/Spanish: <strong>844-TX-VOTES</strong> &nbsp;|&nbsp; Asian languages: <strong>888-API-VOTE</strong> &nbsp;|&nbsp; Arabic: <strong>844-YALLA-US</strong> &nbsp;|&nbsp; ASL video: <strong>301-818-VOTE</strong></p>
+    </div>
+
+    <div class="section-label">Useful links</div>
+    <div class="useful-links">
+      <a class="link-btn" href="https://www.wilcotx.gov/294/Voter-Registration" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24"><path d="M19 19H5V5h7V3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
+        Register to vote (Wilco)
+      </a>
+      <a class="link-btn" href="https://teamrv-mvp.sos.texas.gov/MVP/mvp.do" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24"><path d="M19 19H5V5h7V3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
+        Check your registration
+      </a>
+      <a class="link-btn" href="https://www.wilcotx.gov/elections" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24"><path d="M19 19H5V5h7V3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
+        Wilco Elections Office
+      </a>
+      <a class="link-btn" href="https://www.roundrocktexas.gov/city-departments/administration/city-clerk/elections-elecciones/" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24"><path d="M19 19H5V5h7V3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
+        City of Round Rock elections
+      </a>
+      <a class="link-btn" href="https://www.ballotready.org/us/tx-round-rock" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24"><path d="M19 19H5V5h7V3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
+        BallotReady &mdash; view your full ballot
+      </a>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn" onclick="goStep(2)">&#8592; Back</button>
+      <button class="btn primary" onclick="goStep(4)">Get involved &#8594;</button>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════
+       STEP 4 — Get involved
+  ═══════════════════════════════════ -->
+  <section id="s4" class="step" aria-label="Step 4: Get more involved in Round Rock">
+    <div class="progress-bar">
+      <div class="progress-dot done"></div>
+      <div class="progress-dot done"></div>
+      <div class="progress-dot done"></div>
+      <div class="progress-dot done"></div>
+      <span class="progress-label">Step 4 of 4</span>
+    </div>
+
+    <div class="location-badge">
+      <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+      Round Rock &amp; Williamson County, Texas
+    </div>
+
+    <h2 class="step-title">Get more involved in Round Rock</h2>
+    <p class="step-sub">Voting is just the beginning. Here are concrete ways to shape your community &mdash; pick whatever feels right for where you are right now.</p>
+
+    <div class="info-card">
+      <h4><span class="ic">🗳️</span> Apply to be a poll worker</h4>
+      <p>Williamson County pays poll workers for Election Day. Contact the Williamson County Elections Office at <strong>301 SE Inner Loop, Suite 104, Georgetown, TX 78626</strong> or visit <a href="https://www.wilcotx.gov/elections" target="_blank" rel="noopener">wilcotx.gov/elections</a> to apply. Round Rock polling locations include the Baca Center, Wilco Jester Annex, and others.</p>
+    </div>
+    <div class="info-card">
+      <h4><span class="ic">🎤</span> Speak at Round Rock City Council</h4>
+      <p>Round Rock City Council meets at <strong>City Hall, 221 E. Main St.</strong> Meetings include public comment periods &mdash; any resident can address the council directly. Check <a href="https://www.roundrocktexas.gov" target="_blank" rel="noopener">roundrocktexas.gov</a> for the current meeting schedule.</p>
+    </div>
+    <div class="info-card">
+      <h4><span class="ic">🏛️</span> Attend a Williamson County Commissioners Court meeting</h4>
+      <p>The Commissioners Court meets at <strong>710 Main St, Georgetown</strong> and at <strong>1801 E. Old Settlers Blvd, Round Rock</strong>. Meetings are public with open comment periods. Decisions here affect your property taxes, roads, health services, and county budget.</p>
+    </div>
+    <div class="info-card">
+      <h4><span class="ic">🏫</span> Attend a Round Rock ISD board meeting</h4>
+      <p>RRISD Board of Trustees meets at the <strong>Lillie Delgado Administration Building, 1311 Round Rock Ave</strong>. The board is making key decisions on budget, curriculum, and trustee vacancies. All meetings are open to the public.</p>
+    </div>
+    <div class="info-card">
+      <h4><span class="ic">🤝</span> Connect with your precinct chair</h4>
+      <p>Your local precinct chair is the most direct link between your neighborhood and the political process. They can connect you to voter registration drives, local candidate information, and volunteer opportunities right in your precinct.</p>
+    </div>
+    <div class="info-card">
+      <h4><span class="ic">📢</span> Tell 5 neighbors about the next election</h4>
+      <p>The single most effective action any resident can take: personally tell 5 people you know about an upcoming election, where to vote, and why local races matter. Round Rock City Council and Williamson County races are often decided by very small margins.</p>
+    </div>
+    <div class="info-card">
+      <h4><span class="ic">📋</span> Register voters at local events</h4>
+      <p>Texas voter registration is free and easy to do in person. Bring printed applications (available at any library or from <a href="https://www.sos.state.tx.us/elections/voter/reqvr.shtml" target="_blank" rel="noopener">sos.state.tx.us</a>) and a QR code linking to <a href="https://www.votetexas.gov" target="_blank" rel="noopener">VoteTexas.gov</a> to community events, farmers markets, and neighborhood gatherings.</p>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn" onclick="goStep(3)">&#8592; Back</button>
+      <button class="btn primary" onclick="goStep(1)">&#8635; Start over</button>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <p>This nonpartisan voter information tool was created for Round Rock &amp; Williamson County residents.</p>
+  <p style="margin-top:6px">Election info subject to change &mdash; always verify at <a href="https://www.wilcotx.gov/elections" target="_blank" rel="noopener">wilcotx.gov/elections</a> and <a href="https://www.roundrocktexas.gov/city-departments/administration/city-clerk/elections-elecciones/" target="_blank" rel="noopener">roundrocktexas.gov</a></p>
+</footer>
+
+<script>
+/* ── Data ── */
+const ISSUES = [
+  {id:'rent',   label:'Housing & rent costs'},
+  {id:'tax',    label:'Property taxes'},
+  {id:'jobs',   label:'Jobs & local economy'},
+  {id:'school', label:'Round Rock ISD schools'},
+  {id:'safety', label:'Public safety & police'},
+  {id:'roads',  label:'Roads & traffic'},
+  {id:'water',  label:'Water rates & quality'},
+  {id:'growth', label:'Development & growth'},
+  {id:'health', label:'Healthcare access'},
+  {id:'mental', label:'Mental health services'},
+  {id:'grid',   label:'Power grid reliability'},
+  {id:'crime',  label:'Criminal justice'},
+  {id:'college',label:'Higher education costs'},
+  {id:'environ',label:'Environment'},
+  {id:'biz',    label:'Small business support'},
+  {id:'seniors',label:'Senior services'},
+  {id:'child',  label:'Child & family services'},
+  {id:'trans',  label:'Transportation'},
+  {id:'vote',   label:'Voting access'},
+  {id:'guns',   label:'Gun laws & safety'},
+];
+
+const OFFICES = {
+  rent:[{
+    name:'Round Rock City Council',
+    level:'City — Round Rock', hot:true,
+    why:'The City Council controls zoning ordinances, housing density rules, and building permits that directly shape housing supply and costs in Round Rock. On May 2, 2026, Round Rock held elections for Mayor and Councilmembers for Place 1 and Place 4. The next round of city elections follows in May 2027.',
+    links:[
+      {t:'Round Rock elections page', u:'https://www.roundrocktexas.gov/city-departments/administration/city-clerk/elections-elecciones/'},
+      {t:'BallotReady — view your ballot', u:'https://www.ballotready.org/us/tx-round-rock'},
+    ]
+  }],
+  tax:[{
+    name:'Williamson County Commissioners Court',
+    level:'County — Williamson', hot:true,
+    why:'The Commissioners Court adopts the county tax rate each year. County Judge Steve Snell and Precinct 4 Commissioner Russ Boles are on the November 2026 general election ballot. The court set the FY2024-25 rate at $0.39999 per $100 valuation.',
+    links:[
+      {t:'Wilco Commissioners Court', u:'https://www.wilcotx.gov/331/Commissioners-Court'},
+      {t:'2026 Wilco candidates', u:'https://communityimpact.com/austin/georgetown/government/2025/12/09/here-are-the-candidates-running-in-williamson-county-races-in-2026/'},
+    ]
+  },{
+    name:'Williamson Central Appraisal District Board',
+    level:'Special District',
+    why:'The WCAD board sets property valuations that determine your tax bill each year. Appraisal district board members are elected, and their decisions directly impact how much every property owner in Williamson County owes.',
+    links:[
+      {t:'Williamson CAD', u:'https://www.wcad.org'},
+    ]
+  }],
+  jobs:[{
+    name:'Round Rock City Council',
+    level:'City — Round Rock', hot:true,
+    why:'The City Council shapes local economic development, attracts major employers, and sets business regulations. Round Rock\'s major employers including Dell and many tech companies were drawn by city-level economic incentives approved by the Council.',
+    links:[
+      {t:'Round Rock elections page', u:'https://www.roundrocktexas.gov/city-departments/administration/city-clerk/elections-elecciones/'},
+    ]
+  },{
+    name:'Williamson County Commissioners Court',
+    level:'County — Williamson', hot:true,
+    why:'The Commissioners Court approves economic development agreements and county tax incentives for businesses. The county recently approved an agreement with Compal USA projecting 500 new full-time positions in the area.',
+    links:[
+      {t:'Wilco Commissioners Court', u:'https://www.wilcotx.gov/331/Commissioners-Court'},
+    ]
+  }],
+  school:[{
+    name:'Round Rock ISD Board of Trustees',
+    level:'School District',
+    why:'RRISD trustees govern all 60 schools serving over 46,000 students across southern Williamson and northwest Travis counties. The board controls the $446M budget, curriculum, staffing, and school safety policies. Board president Tiffanie Harrison stepped down in 2025, making upcoming trustee elections especially significant.',
+    links:[
+      {t:'RRISD Board of Trustees', u:'https://www.roundrockisd.org/page/board-of-trustees'},
+      {t:'RRISD news & meetings', u:'https://news.roundrockisd.org/category/board-of-trustees/'},
+    ]
+  },{
+    name:'Texas State Board of Education',
+    level:'State',
+    why:'Sets the statewide curriculum standards and textbook policies used in every Round Rock ISD classroom. SBOE members are elected by district in statewide races.',
+    links:[
+      {t:'SBOE member lookup', u:'https://tea.texas.gov/about-tea/leadership/state-board-of-education/sboe-members'},
+    ]
+  }],
+  safety:[{
+    name:'Round Rock City Council & Mayor',
+    level:'City — Round Rock', hot:true,
+    why:'The City Council and Mayor control the Round Rock Police Department budget, hiring, and oversight policies. The Mayor race appeared on the May 2, 2026 ballot.',
+    links:[
+      {t:'Round Rock elections page', u:'https://www.roundrocktexas.gov/city-departments/administration/city-clerk/elections-elecciones/'},
+    ]
+  },{
+    name:'Williamson County Sheriff',
+    level:'County — Williamson',
+    why:'The elected Sheriff runs the Williamson County Sheriff\'s Office, covering unincorporated areas of the county and operating the county jail. The Sheriff sets department-wide enforcement priorities.',
+    links:[
+      {t:'Wilco Sheriff\'s Office', u:'https://www.wilcotx.gov/174/Sheriffs-Office'},
+    ]
+  }],
+  roads:[{
+    name:'Round Rock City Council',
+    level:'City — Round Rock', hot:true,
+    why:'City Council controls city street maintenance, traffic signals, sidewalks, and local road projects. The council coordinates with TxDOT and the county on major corridor improvements throughout Round Rock.',
+    links:[
+      {t:'Round Rock elections page', u:'https://www.roundrocktexas.gov/city-departments/administration/city-clerk/elections-elecciones/'},
+    ]
+  },{
+    name:'Williamson County Commissioners Court',
+    level:'County — Williamson', hot:true,
+    why:'The Commissioners Court funds and oversees county roads and bridges. Williamson County recently completed the Sam Bass Road widening project in Round Rock. Precinct 4 Commissioner (covering part of Round Rock) is on the 2026 ballot.',
+    links:[
+      {t:'Wilco Commissioners Court', u:'https://www.wilcotx.gov/331/Commissioners-Court'},
+    ]
+  }],
+  water:[{
+    name:'Round Rock City Council',
+    level:'City — Round Rock', hot:true,
+    why:'The City Council governs Round Rock\'s municipal water utility, sets water rates, and oversees water quality standards. The city published a new water quality report in June 2026.',
+    links:[
+      {t:'Round Rock water info', u:'https://www.roundrocktexas.gov'},
+      {t:'Round Rock elections page', u:'https://www.roundrocktexas.gov/city-departments/administration/city-clerk/elections-elecciones/'},
+    ]
+  }],
+  growth:[{
+    name:'Round Rock City Council',
+    level:'City — Round Rock', hot:true,
+    why:'Every major development, rezoning, and new subdivision in Round Rock must be approved by the City Council. The Council controls the comprehensive plan that guides how the city grows and where new housing, retail, and commercial development can be built.',
+    links:[
+      {t:'Round Rock elections page', u:'https://www.roundrocktexas.gov/city-departments/administration/city-clerk/elections-elecciones/'},
+    ]
+  },{
+    name:'Williamson County Commissioners Court',
+    level:'County — Williamson', hot:true,
+    why:'Controls development in unincorporated areas of Williamson County surrounding Round Rock and approves major infrastructure projects tied to growth. The county is one of the fastest-growing in the United States.',
+    links:[
+      {t:'Wilco Commissioners Court', u:'https://www.wilcotx.gov/331/Commissioners-Court'},
+    ]
+  }],
+  health:[{
+    name:'Williamson County Commissioners Court',
+    level:'County — Williamson', hot:true,
+    why:'The Commissioners Court funds the Williamson County & Cities Health District, which operates public health programs and clinics serving Round Rock residents. County health budget decisions are made here.',
+    links:[
+      {t:'Wilco & Cities Health District', u:'https://www.wcchd.org'},
+      {t:'Wilco Commissioners Court', u:'https://www.wilcotx.gov/331/Commissioners-Court'},
+    ]
+  },{
+    name:'Texas State Legislature',
+    level:'State',
+    why:'State senators and representatives control Medicaid policy, hospital funding, and health insurance regulations that affect every Texan\'s healthcare access.',
+    links:[
+      {t:'Find your TX legislators', u:'https://wrm.capitol.texas.gov/'},
+    ]
+  }],
+  mental:[{
+    name:'Williamson County Commissioners Court',
+    level:'County — Williamson', hot:true,
+    why:'The Commissioners Court funds Bluebonnet Trails Community Services, the local mental health authority serving Williamson County including Round Rock, providing crisis services, counseling, and psychiatric care.',
+    links:[
+      {t:'Bluebonnet Trails Community Services', u:'https://www.bluebonnettrails.org'},
+      {t:'Wilco Commissioners Court', u:'https://www.wilcotx.gov/331/Commissioners-Court'},
+    ]
+  }],
+  grid:[{
+    name:'Texas State Legislature',
+    level:'State',
+    why:'State senators and representatives pass laws governing ERCOT and the Texas power grid, including winterization requirements that affect every Round Rock household during extreme weather events.',
+    links:[
+      {t:'Find your TX legislators', u:'https://wrm.capitol.texas.gov/'},
+      {t:'ERCOT info', u:'https://www.ercot.com'},
+    ]
+  },{
+    name:'Railroad Commission of Texas',
+    level:'State — Elected',
+    why:'Three elected commissioners regulate Texas\'s oil and gas infrastructure, which is directly tied to grid reliability. Despite the name, this agency controls energy policy — all three seats cycle through statewide elections.',
+    links:[
+      {t:'TX Railroad Commission', u:'https://www.rrc.texas.gov'},
+    ]
+  }],
+  crime:[{
+    name:'Williamson County District Attorney',
+    level:'County — Williamson',
+    why:'The elected DA decides which cases to prosecute, sentencing recommendations, and how county law enforcement resources are prioritized across all of Williamson County including Round Rock.',
+    links:[
+      {t:'Wilco DA Office', u:'https://www.wilcotx.gov/'},
+    ]
+  },{
+    name:'Williamson County Judge',
+    level:'County — Williamson', hot:true,
+    why:'County Judge Steve Snell (appointed March 2026 after Judge Bill Gravel resigned) will face Democratic challenger Heather Jefts in the November 2026 general election. The County Judge serves both judicial and executive roles.',
+    links:[
+      {t:'2026 Wilco candidates', u:'https://communityimpact.com/austin/georgetown/government/2025/12/09/here-are-the-candidates-running-in-williamson-county-races-in-2026/'},
+    ]
+  }],
+  college:[{
+    name:'Austin Community College District Board',
+    level:'Community College District',
+    why:'ACC serves Round Rock students through the Round Rock Campus at 1555 University Blvd. The elected ACC board sets tuition rates, programs, and financial aid policies that directly affect affordability for local students.',
+    links:[
+      {t:'ACC Round Rock Campus', u:'https://www.austincc.edu/locations/round-rock'},
+      {t:'ACC Board of Trustees', u:'https://www.austincc.edu/about-acc/board-of-trustees'},
+    ]
+  },{
+    name:'Texas State Legislature',
+    level:'State',
+    why:'Controls state funding formulas for public universities and community colleges, which directly determines tuition levels and financial aid availability for students across Texas.',
+    links:[
+      {t:'Find your TX legislators', u:'https://wrm.capitol.texas.gov/'},
+    ]
+  }],
+  environ:[{
+    name:'Williamson County Commissioners Court',
+    level:'County — Williamson', hot:true,
+    why:'The Commissioners Court oversees stormwater management, flood control, and environmental programs in Williamson County. The court recently secured a $1M flood warning grant from the Texas Water Development Board.',
+    links:[
+      {t:'Wilco Commissioners Court', u:'https://www.wilcotx.gov/331/Commissioners-Court'},
+    ]
+  },{
+    name:'Railroad Commission of Texas',
+    level:'State — Elected',
+    why:'Controls environmental oversight of oil, gas, and pipeline operations across Texas. Three elected commissioners set enforcement priorities for the energy industry\'s environmental impacts.',
+    links:[
+      {t:'TX Railroad Commission', u:'https://www.rrc.texas.gov'},
+    ]
+  }],
+  biz:[{
+    name:'Round Rock City Council',
+    level:'City — Round Rock', hot:true,
+    why:'City Council controls business permits, commercial zoning, local taxes, and economic development incentives that directly affect Round Rock small businesses. The Council also partners with the Round Rock Chamber of Commerce on business growth initiatives.',
+    links:[
+      {t:'Round Rock elections page', u:'https://www.roundrocktexas.gov/city-departments/administration/city-clerk/elections-elecciones/'},
+      {t:'Round Rock Chamber', u:'https://roundrockchamber.org'},
+    ]
+  },{
+    name:'Williamson County Commissioners Court',
+    level:'County — Williamson', hot:true,
+    why:'Sets county tax rates and approves economic development incentive agreements for businesses considering relocating to or expanding in Williamson County.',
+    links:[
+      {t:'Wilco Commissioners Court', u:'https://www.wilcotx.gov/331/Commissioners-Court'},
+    ]
+  }],
+  seniors:[{
+    name:'Williamson County Commissioners Court',
+    level:'County — Williamson', hot:true,
+    why:'The Commissioners Court funds senior services through the county budget including programs coordinated through the Area Agency on Aging of the Capital Area, covering transportation, nutrition, and support services for Williamson County seniors.',
+    links:[
+      {t:'Capital Area AAA', u:'https://www.capcog.org/divisions/area-agency-on-aging/'},
+      {t:'Wilco Commissioners Court', u:'https://www.wilcotx.gov/331/Commissioners-Court'},
+    ]
+  }],
+  child:[{
+    name:'Round Rock ISD Board of Trustees',
+    level:'School District',
+    why:'RRISD trustees oversee early childhood education programs and the resources available to families with children across the 60-school district serving Round Rock.',
+    links:[
+      {t:'RRISD Board of Trustees', u:'https://www.roundrockisd.org/page/board-of-trustees'},
+    ]
+  },{
+    name:'Texas State Legislature',
+    level:'State',
+    why:'Controls the Department of Family and Protective Services (DFPS), foster care policy, and family support program funding statewide. These decisions flow directly into services available in Williamson County.',
+    links:[
+      {t:'TX DFPS', u:'https://www.dfps.texas.gov'},
+      {t:'Find your TX legislators', u:'https://wrm.capitol.texas.gov/'},
+    ]
+  }],
+  trans:[{
+    name:'Round Rock City Council',
+    level:'City — Round Rock', hot:true,
+    why:'City Council decides local transit budgets, pedestrian and bike lane infrastructure, and coordinates with Capital Metro on bus routes serving Round Rock residents.',
+    links:[
+      {t:'Round Rock elections page', u:'https://www.roundrocktexas.gov/city-departments/administration/city-clerk/elections-elecciones/'},
+      {t:'Capital Metro', u:'https://www.capmetro.org'},
+    ]
+  },{
+    name:'Williamson County Commissioners Court',
+    level:'County — Williamson', hot:true,
+    why:'Oversees county road infrastructure and participates in regional transportation planning affecting Round Rock commuters and residents throughout Williamson County.',
+    links:[
+      {t:'Wilco Commissioners Court', u:'https://www.wilcotx.gov/331/Commissioners-Court'},
+    ]
+  }],
+  vote:[{
+    name:'Williamson County Elections Office',
+    level:'County — Williamson',
+    why:'The Williamson County Elections Office (301 SE Inner Loop, Suite 104, Georgetown) runs all elections for Round Rock voters in Williamson County. They manage voter registration, early voting sites, polling locations, and ballot-by-mail. Call 1-800-252-VOTE with any questions.',
+    links:[
+      {t:'Wilco Elections Office', u:'https://www.wilcotx.gov/elections'},
+      {t:'Register to vote', u:'https://www.wilcotx.gov/294/Voter-Registration'},
+      {t:'Check your registration', u:'https://teamrv-mvp.sos.texas.gov/MVP/mvp.do'},
+    ]
+  }],
+  guns:[{
+    name:'Texas State Legislature',
+    level:'State',
+    why:'Texas gun laws — including carry laws, background check requirements, and safe storage rules — are set entirely at the state level by the Texas Legislature. These laws apply uniformly across Williamson County and Round Rock.',
+    links:[
+      {t:'Find your TX legislators', u:'https://wrm.capitol.texas.gov/'},
+    ]
+  },{
+    name:'Williamson County District Attorney',
+    level:'County — Williamson',
+    why:'The elected DA decides how aggressively to prosecute gun law violations in Williamson County, setting the local enforcement tone for existing state laws.',
+    links:[
+      {t:'Wilco DA Office', u:'https://www.wilcotx.gov/'},
+    ]
+  }],
+};
+
+const RELATED = [
+  {emoji:'⚖️', name:'Williamson County Justice of the Peace', desc:'Handles small claims, traffic tickets, and minor civil matters — 4 elected JP precincts cover the Round Rock area'},
+  {emoji:'🏦', name:'Williamson County Tax Assessor-Collector', desc:'Collects property taxes and registers vehicles — a key county office recently filled by appointment in July 2026'},
+  {emoji:'🎓', name:'Austin Community College Board of Trustees', desc:'Sets tuition and programs at ACC\'s Round Rock Campus on University Blvd — board members are elected countywide'},
+  {emoji:'💧', name:'Local Water & MUD Districts', desc:'Special purpose water and utility districts may serve your neighborhood — their boards are separately elected'},
+  {emoji:'🏛️', name:'Texas State Senate & House — local districts', desc:'Your state senator and representative shape every major policy affecting Round Rock from education to the power grid'},
+  {emoji:'⚖️', name:'Williamson County Courts at Law (Judges)', desc:'County court judges hear civil and criminal cases — these are elected positions that appear on your county ballot'},
+];
+
+/* ── State ── */
+let selected = new Set();
+
+/* ── Render chips ── */
+function renderChips() {
+  const grid = document.getElementById('chip-grid');
+  grid.innerHTML = ISSUES.map(i => {
+    const s = selected.has(i.id);
+    return `<button class="chip${s ? ' sel' : ''}" onclick="toggleIssue('${i.id}')" aria-pressed="${s}">${i.label}</button>`;
+  }).join('');
+}
+
+function toggleIssue(id) {
+  selected.has(id) ? selected.delete(id) : selected.add(id);
+  renderChips();
+  document.getElementById('btn-next1').disabled = selected.size === 0;
+}
+
+/* ── Render results ── */
+function renderResults() {
+  const extLink = `<svg viewBox="0 0 24 24" style="width:11px;height:11px;fill:currentColor;flex-shrink:0"><path d="M19 19H5V5h7V3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>`;
+
+  const seen = new Set();
+  let html = '';
+
+  selected.forEach(id => {
+    (OFFICES[id] || []).forEach(o => {
+      if (seen.has(o.name)) return;
+      seen.add(o.name);
+
+      const matchedIssues = [...selected]
+        .filter(s => (OFFICES[s] || []).some(x => x.name === o.name))
+        .map(s => ISSUES.find(i => i.id === s)?.label)
+        .filter(Boolean);
+
+      const validLinks = (o.links || []).filter(l => l.t && l.u);
+
+      html += `
+        <div class="office-card">
+          <div class="badge-row">
+            <span class="badge badge-level">&#127963; ${o.level}</span>
+            ${o.hot ? '<span class="badge badge-hot">&#128308; On 2026 ballot</span>' : ''}
+          </div>
+          <div class="office-name">${o.name}</div>
+          <div class="issue-tags">${matchedIssues.map(t => `<span class="itag">${t}</span>`).join('')}</div>
+          <p class="office-why">${o.why}</p>
+          ${validLinks.length ? `<div class="link-row">${validLinks.map(l =>
+            `<a class="link-btn" href="${l.u}" target="_blank" rel="noopener">${extLink} ${l.t}</a>`
+          ).join('')}</div>` : ''}
+        </div>`;
+    });
+  });
+
+  document.getElementById('offices-out').innerHTML = html ||
+    '<p style="color:var(--text-secondary);font-size:14px">No offices found — please go back and select some issues.</p>';
+
+  document.getElementById('related-out').innerHTML = RELATED.map(r => `
+    <a class="related-card" href="https://ballotpedia.org/Williamson_County,_Texas" target="_blank" rel="noopener" aria-label="Learn more about ${r.name}">
+      <span class="related-icon" aria-hidden="true">${r.emoji}</span>
+      <div class="related-text">
+        <strong>${r.name}</strong>
+        <span>${r.desc}</span>
+      </div>
+      <span class="related-arrow" aria-hidden="true">&#8594;</span>
+    </a>`).join('');
+}
+
+/* ── Navigation ── */
+function goStep(n) {
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+  document.getElementById('s' + n).classList.add('active');
+  if (n === 2) renderResults();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* ── Init ── */
+renderChips();
+</script>
+</body>
+</html>
